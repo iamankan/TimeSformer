@@ -178,8 +178,8 @@ class PatchEmbed(nn.Module):
 class VisionTransformer(nn.Module):
     """ Vision Transformere
     """
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=12,
-                 num_heads=12, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=1000, embed_dim=768, depth=6,
+                 num_heads=8, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0.,
                  drop_path_rate=0.1, hybrid_backbone=None, norm_layer=nn.LayerNorm, num_frames=8, attention_type='divided_space_time', dropout=0.):
         super().__init__()
         self.attention_type = attention_type
@@ -297,10 +297,10 @@ class VisionTransformer(nn.Module):
             x = torch.mean(x, 1) # averaging predictions for every frame
 
         x = self.norm(x)
-        return x[:, 0]
+        return x[:, 0], x[:, 1:]
 
     def forward(self, x):
-        x = self.forward_features(x)
+        x, _= self.forward_features(x)
         x = self.head(x)
         return x
 
@@ -338,7 +338,7 @@ class vit_base_patch16_224(nn.Module):
 class TimeSformer(nn.Module):
     def __init__(self, img_size=224, patch_size=16, num_classes=400, num_frames=8, attention_type='divided_space_time',  pretrained_model='', **kwargs):
         super(TimeSformer, self).__init__()
-        self.pretrained=True
+        self.pretrained=False
         self.model = VisionTransformer(img_size=img_size, num_classes=num_classes, patch_size=patch_size, embed_dim=768, depth=12, num_heads=12, mlp_ratio=4, qkv_bias=True, norm_layer=partial(nn.LayerNorm, eps=1e-6), drop_rate=0., attn_drop_rate=0., drop_path_rate=0.1, num_frames=num_frames, attention_type=attention_type, **kwargs)
 
         self.attention_type = attention_type
